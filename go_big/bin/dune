@@ -1,0 +1,4 @@
+(executable
+ (public_name go_big)
+ (name main)
+ (libraries go_big graphics unix))
