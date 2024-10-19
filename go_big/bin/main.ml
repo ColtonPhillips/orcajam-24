@@ -33,6 +33,21 @@ let draw_room () =
         done
     done
 
+let check_game_over () =
+    if Random.int 20 = 0 then
+        true  (* Game over condition met *)
+    else
+        false  (* Game continues *)
+
+let game_loop () = 
+    let game_over = ref false in 
+    while not !game_over do
+        draw_room ();
+        game_over := check_game_over ();
+        synchronize ();
+        Unix.sleepf 0.2
+    done
+
 let () =
     (* The origin is in the bottom left corner :( *)
     (* open_graph "500x500"; *)
@@ -40,11 +55,15 @@ let () =
     (* All subsequent drawing commands are performed on the backing store only. *)
     auto_synchronize false;
     clear_graph ();
+
     draw_room ();
-    (* moveto (_room_width / 2) 50; *)
-    moveto 0 room_height;
+    draw_char (room_width / 3) (room_height / 2) "Welcome to Colton's 1st Game!";
 
     synchronize ();
+    Unix.sleepf 0.2;
+
     ignore(read_key());
+
+    game_loop ();
 
     close_graph ()  
