@@ -6,20 +6,17 @@ let char_width = 8
 let char_height = 13
 let room_width = 130 / 2
 let room_height = 80 / 2
+(* I can't explain why it needs me to do these extra char buffers. Jank *)
 let window_width = char_width +char_width + char_width + (room_width * char_width)
 let window_height = char_height +char_height +char_height + char_height + (room_height * char_height)
 
 let wall_tile = "#"
-let _player_tile = "O"
+let player_tile = "O"
 let _enemy_tile = "X"
 
-let _player_pos = ref (2, 2)
+let player_pos = ref (2, 2)
 let _enemy_pos = ref (room_width - 2, room_height - 2)
-(* 
-let draw_char x y ch = 
-    moveto *)
 
-(* Helper functions *)
 let draw_char x y ch =
     moveto (x * char_width) (y * char_height);
     draw_string ch
@@ -33,16 +30,44 @@ let draw_room () =
         done
     done
 
+let draw_player () = 
+    let (x, y) = !player_pos in
+    draw_char x y player_tile
+
 let check_game_over () =
-    if Random.int 20 = 0 then
+    if !player_pos = !_enemy_pos then
         true  (* Game over condition met *)
     else
         false  (* Game continues *)
 
+let last_key = ref None;;  (* Track the last key pressed *)
+
+let handle_input () =
+  if key_pressed () then
+    let key = read_key () in
+
+    (* Only process input if it's a new key press *)
+    if !last_key <> Some key then begin
+      last_key := Some key;  (* Update the last key pressed *)
+      let (x, y) = !player_pos in
+      player_pos := (
+        match key with
+        | 'w' when y < room_height - 1 -> (x, y + 1)
+        | 's' when y > 1 -> (x, y - 1)
+        | 'a' when x > 1 -> (x - 1, y)
+        | 'd' when x < room_width - 1 -> (x + 1, y)
+        | _ -> (x, y)
+      )
+    end
+  else
+    (* Clear last key if no key is pressed *)
+    last_key := None;;
 let game_loop () = 
     let game_over = ref false in 
     while not !game_over do
         draw_room ();
+        draw_player ();
+        handle_input ();
         game_over := check_game_over ();
         synchronize ();
         Unix.sleepf 0.2
