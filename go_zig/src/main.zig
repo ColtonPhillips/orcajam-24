@@ -1,24 +1,62 @@
 const std = @import("std");
 
-pub fn main() !void {
-    // Prints to stderr (it's a shortcut based on `std.io.getStdErr()`)
-    std.debug.print("All your {s} are belong to us.\n", .{"codebase"});
+const width = 11;
+const height = 11;
 
-    // stdout is for the actual output of your application, for example if you
-    // are implementing gzip, then only the compressed bytes should be sent to
-    // stdout, not any debugging messages.
-    const stdout_file = std.io.getStdOut().writer();
-    var bw = std.io.bufferedWriter(stdout_file);
-    const stdout = bw.writer();
-
-    try stdout.print("Run `zig build test` to run the tests.\n", .{});
-
-    try bw.flush(); // don't forget to flush!
+fn render_room(player_x: usize, player_y: usize) void {
+    const stdout = std.io.getStdOut().writer();
+    for (0..height) |y| {
+        for (0..width) |x| {
+            if (x == 0 or x == width - 1 or y == 0 or y == height - 1) {
+                // Render walls
+                stdout.writeAll("#") catch {};
+            } else if (x == player_x and y == player_y) {
+                // Render player
+                stdout.writeAll("O") catch {};
+            } else {
+                // Render empty space
+                stdout.writeAll(" ") catch {};
+            }
+        }
+        stdout.writeAll("\n") catch {};
+    }
 }
 
-test "simple test" {
-    var list = std.ArrayList(i32).init(std.testing.allocator);
-    defer list.deinit(); // try commenting this out and see if zig detects the memory leak!
-    try list.append(42);
-    try std.testing.expectEqual(@as(i32, 42), list.pop());
+pub fn main() !void {
+    const player_x: usize = 1; // Start position of the player
+    const player_y: usize = 1;
+
+    // const stdin = std.io.getStdIn().reader();
+    const stdout = std.io.getStdOut().writer();
+
+    while (true) {
+        // std.io.stdout.clear() catch {}; // Clear the screen
+        // std.io.getStdOut().writer().
+        try stdout.print("\x1b[2J\x1b[H", .{});
+
+        render_room(player_x, player_y); // Render the room
+
+        // Read input
+        // const input = stdin.readByte() catch |err| {
+        //     std.debug.print("Error reading input: {}\n", .{err});
+        //     return err;
+        // };
+
+        // Move player based on input
+        // switch (input) {
+        //     'W' => {
+        //         if (player_y > 1) player_y -= 1;
+        //     }, // Move up
+        //     'S' => {
+        //         if (player_y < height - 2) player_y += 1;
+        //     }, // Move down
+        //     'A' => {
+        //         if (player_x > 1) player_x -= 1;
+        //     }, // Move left
+        //     'D' => {
+        //         if (player_x < width - 2) player_x += 1;
+        //     }, // Move right
+        //     else => {},
+        // }
+    }
 }
