@@ -48,7 +48,8 @@ let draw_enemy () =
     let (x, y) = !enemy_pos in
     draw_char x y enemy_tile
 
-(* Enemy movement logic *)
+(* Move the enemy toward the player, even diagonally, but it typically doesn't want to move *)
+(* This is slower/faster depending on your CPU speed, which matches my original implementation *)
 let move_enemy () =
     if Random.float 100.0 < 99.5 then () (* sometimes enemy pauses *)
     else begin
@@ -69,14 +70,17 @@ let move_enemy () =
         enemy_pos := (new_x, new_y)  (* Update position with new coordinates *)
     end
 
+(* If the enemy and player tiles touch, you lose the game; Halt And Catch Fire *)
 let check_game_over () =
     if !player_pos = !enemy_pos then
         true  (* Game over condition met *)
     else
         false  (* Game continues *)
 
+
 let last_key = ref None;;  (* Track the last key pressed *)
 
+(* Handle player input and update player position ASDW keys *)
 let handle_input () =
   if key_pressed () then
     let key = read_key () in
@@ -84,6 +88,8 @@ let handle_input () =
     (* Only process input if it's a new key press *)
     if !last_key <> Some key then begin
       last_key := Some key;  (* Update the last key pressed *)
+
+      (* Set players new position based on the key found *)
       let (x, y) = !player_pos in
       player_pos := (
         match key with
@@ -97,6 +103,8 @@ let handle_input () =
   else
     (* Clear last key if no key is pressed *)
     last_key := None;;
+
+(* Main game loop; Quit if user dies *)
 let game_loop () = 
     let game_over = ref false in 
     while not !game_over do
@@ -109,21 +117,31 @@ let game_loop () =
         synchronize ();
     done
 
+(* Main method *)
 let () =
     (* The origin is in the bottom left corner :( *)
+    (* Create a graphics window *)
     open_graph (Printf.sprintf " %dx%d" window_width window_height);
+
     (* All subsequent drawing commands are performed on the backing store only. *)
     auto_synchronize false;
+
+    (* Erase the window *)
     clear_graph ();
 
+    (* Draw the Starting Window *)
     draw_room ();
     draw_char (room_width / 3) (room_height / 2) "Welcome to Colton's 1st Game!";
 
+    (* Synchronize the terminal graphics that are being buffered into it like, it literally just happened *)
+    Unix.sleepf 0.5;
     synchronize ();
-    Unix.sleepf 0.2;
 
+     (* Wait for User Input *)
     ignore(read_key());
 
+    (* Run the main game loop until you die *)
     game_loop ();
 
+    (* Shut it down; You don't have to go home, but you can't stay here. *)
     close_graph ()  
