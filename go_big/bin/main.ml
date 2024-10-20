@@ -1,26 +1,34 @@
+(* Import the graphics library `opam install graphics *)
 open Graphics;;
 
-(* let font_size = ref (8 13);;
-let (char_width, char_height) = !_font_size *)
+(* Default font is about this size *)
 let char_width = 8
 let char_height = 13
-let room_width = 130 / 2
-let room_height = 80 / 2
-(* I can't explain why it needs me to do these extra char buffers. Jank *)
-let window_width = char_width +char_width + char_width + (room_width * char_width)
-let window_height = char_height +char_height +char_height + char_height + (room_height * char_height)
 
+(* The room is roughly square sized, because of the ratios of sizes *)
+let room_width = char_height * 10 / 2
+let room_height = char_width * 10 / 2
+
+(* For some reason the window needs some padding to see my board *)
+let window_width = 3 * char_width + (room_width * char_width)
+let window_height = 4 * char_height + (room_height * char_height)
+
+(* Each game "entity" has it's own tile *)
 let wall_tile = "#"
 let player_tile = "O"
 let enemy_tile = "X"
+let _empty_tile = " "
 
+(* Player/Enemy positions *)
 let player_pos = ref (2, 2)
 let enemy_pos = ref (room_width - 2, room_height - 2)
 
+(* Draw a char/string anywhere on the board *)
 let draw_char x y ch =
     moveto (x * char_width) (y * char_height);
     draw_string ch
 
+(* Draw all the walls around the square room *)
 let draw_room () =
     clear_graph ();
     for y = 0 to room_height do
@@ -30,10 +38,12 @@ let draw_room () =
         done
     done
 
+(* Draw the player character *)
 let draw_player () = 
     let (x, y) = !player_pos in
     draw_char x y player_tile
 
+(* Draw the enemy character *)
 let draw_enemy () =
     let (x, y) = !enemy_pos in
     draw_char x y enemy_tile
