@@ -40,7 +40,7 @@ let draw_enemy () =
 
 (* Enemy movement logic *)
 let move_enemy () =
-    if Random.int 100 < 98 then () (* sometimes enemy pauses *)
+    if Random.float 100.0 < 99.5 then () (* sometimes enemy pauses *)
     else begin
         let (px, py) = !player_pos in
         let (ex, ey) = !enemy_pos in
